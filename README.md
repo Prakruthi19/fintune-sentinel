@@ -51,7 +51,7 @@ This project achieves high-speed performance on CPUs through three primary optim
 ![LLM CPU Optimization Workflow](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*9io6C9f3o5OiwGHhwhGWSw.png)
 > **Image Source:** [Lakshmi Devi Prakash / Kompact AI](https://medium.com/@datascientist.lakshmi/kompact-ai-running-llms-on-cpus-without-sacrificing-performance-e1fe70fc2a6a) — *Demonstrating the SIMD vectorization and mmap-based memory efficiency used in FinTune-Sentinel.*
 
-### 🧠 Why this Architecture Matters
+## 🧠 Why this Architecture Matters
 By implementing the "Kompact" style of CPU inference, **FinTune-Sentinel** achieves:
 1. **Lazy Loading:** Using `mmap` to map the 2.02GB model file without consuming physical RAM until the moment of inference.
 2. **Parallel Math:** Leveraging **AVX2/SIMD** instructions to calculate financial ratios 4x faster than standard Python-based LLMs.
