@@ -56,15 +56,21 @@ This project achieves high-speed performance on CPUs through three primary optim
 By implementing the "Kompact" style of CPU inference, **FinTune-Sentinel** achieves:
 1. **Lazy Loading:** Using `mmap` to map the 2.02GB model file without consuming physical RAM until the moment of inference.
 2. **Parallel Math:** Leveraging **AVX2/SIMD** instructions to calculate financial ratios 4x faster than standard Python-based LLMs.
+---
 
-The Training Data: Three Pillars of Financial IQ 🧠
-To move beyond general chat, I fine-tuned Sentinel-3B using a specialized data stack:
+## The Training Data: Three Pillars of Financial IQ 🧠
 
-10-K Comprehensive Q&A: Used Yousef Saeedian’s Financial Q&A-10k (7,000+ expert pairs) to teach the model the "geography" of SEC filings.
+## 📚 Training Data & Knowledge Strategy
+To move beyond general chat and master SEC-level auditing, **FinTune-Sentinel** was trained on a specialized "Triple-Pillar" data stack:
 
-Expert Theory & Reasoning: Integrated the Finance-Llama2-1k dataset to master complex concepts like yield-to-maturity and currency hedging.
+1. **10-K Comprehensive Q&A (Geography):** - **Dataset:** [Financial Q&A-10k by Yousef Saeedian](https://www.kaggle.com/datasets/yousefsaeedian/financial-q-and-a-10k)
+   - **Role:** Teaches the model the structure and "geography" of SEC filings to locate specific risk factors and financial items.
 
-Numerical Precision (FinQA): Leveraged Visalakshi Iyer’s FinQA collection to ensure the model follows a strict mathematical program when calculating YoY growth or debt-to-equity ratios.
+2. **Expert Theory & Reasoning (Finance IQ):** - **Dataset:** [Finance-Llama2-1k by Yousef Saeedian](https://www.kaggle.com/datasets/yousefsaeedian/finance-llama2-1k)
+   - **Role:** Masters complex high-level concepts such as yield-to-maturity, debt-to-equity ratios, and currency hedging strategies.
+
+3. **Numerical Precision (FinQA):** - **Dataset:** [Question Answering on Financial Data by Visalakshi Iyer](https://www.kaggle.com/datasets/visalakshiiyer/question-answering-financial-data)
+   - **Role:** Forces the model to follow a strict mathematical program for YoY growth calculations and multi-step numerical reasoning.
 
 ## 🚦 Quick Start
 ### Prerequisites
