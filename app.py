@@ -1,48 +1,52 @@
+import os
 
-mport gradio as gr
+import gradio as gr
 from huggingface_hub import hf_hub_download
 from llama_cpp import Llama
 
-# 1. Configuration
-# Replace with your actual HF repo and GGUF filename
-repo_id = "Prakruthi/FinTune-Sentinel-GGUF"
-model_filename = "Llama-3.2-3B-Instruct.Q4_K_M.gguf" 
+from sentinel.data import SYSTEM_PROMPT
+from sentinel.governance import audit
 
-# 2. Download and Load Model (Runs on CPU)
-print("Loading model from Hub...")
-model_path = hf_hub_download(repo_id=repo_id, filename=model_filename)
-print("✅ Download complete!")
-# Change this in app.py
-print("🚀 Loading model...")
-llm = Llama(
-    model_path=model_path, 
-    n_ctx=512,      # Reduce from 2048 → 512
-    n_threads=1,    # Reduce from 2 → 1
-    verbose=False,   # Hide logs
-    n_gpu_layers=0
-) # 2 threads for HF free tier
+# 1. Configuration (override via env vars on Cloud Run / HF Spaces)
+REPO_ID = os.environ.get("MODEL_REPO", "Prakruthi/FinTune-Sentinel-GGUF")
+MODEL_FILE = os.environ.get("MODEL_FILE", "Llama-3.2-3B-Instruct.Q4_K_M.gguf")
+N_CTX = int(os.environ.get("N_CTX", "4096"))
+N_THREADS = int(os.environ.get("N_THREADS", str(os.cpu_count() or 2)))
 
-print("✅ Model loaded!")
+# 2. Load model (CPU). MODEL_PATH lets a container use a baked-in or mounted file.
+model_path = os.environ.get("MODEL_PATH") or hf_hub_download(repo_id=REPO_ID, filename=MODEL_FILE)
+llm = Llama(model_path=model_path, n_ctx=N_CTX, n_threads=N_THREADS, n_gpu_layers=0, verbose=False)
+print(f"Model loaded: {model_path} (n_ctx={N_CTX}, threads={N_THREADS})")
+
+
+def _to_messages(history):
+    """Accepts both Gradio history formats: openai-style dicts or (user, bot) tuples."""
+    messages = []
+    for item in history or []:
+        if isinstance(item, dict):
+            messages.append({"role": item["role"], "content": item["content"]})
+        else:
+            user, bot = item
+            messages += [{"role": "user", "content": user}, {"role": "assistant", "content": bot}]
+    return messages
+
 
 def predict(message, history):
-    # Professional prompt formatting
-    prompt = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-You are a Senior Financial Analyst.<|eot_id|><|start_header_id|>user<|end_header_id|>
-{message}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-"
-    
-    # Generate response
-    response = llm(
-        prompt, 
-        max_tokens=256, 
-        stop=["<|eot_id|>", "user", "system"], 
-        echo=False
-    )
-    return response["choices"][0]["text"].strip()
+    # create_chat_completion applies the GGUF's own Llama-3 chat template, so there is no
+    # hand-built prompt, no duplicate BOS, and generation stops on <|eot_id|> only.
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}, *_to_messages(history)[-6:],
+                {"role": "user", "content": message}]
+    out = llm.create_chat_completion(messages=messages, max_tokens=512, temperature=0.1)
+    result = audit(out["choices"][0]["message"]["content"].strip())
+    footer = f"\n\n---\nPolicy-Sentinel: **{result.status}**"
+    if result.findings:
+        footer += " - " + "; ".join(result.findings)
+    return result.text + footer
 
-# 3. Launch UI
+
+# 3. Launch UI (0.0.0.0 + $PORT so it is reachable inside Docker / Cloud Run)
 gr.ChatInterface(
     predict,
-    title="🛡️ FinTune-Sentinel (CPU Optimized)",
-    description="Secure financial analysis running on edge-ready GGUF.",
-).launch()
+    title="FinTune-Sentinel (CPU Optimized)",
+    description="Financial analysis on a 4-bit GGUF model, with every answer audited by Policy-Sentinel.",
+).launch(server_name="0.0.0.0", server_port=int(os.environ.get("PORT", "7860")))
