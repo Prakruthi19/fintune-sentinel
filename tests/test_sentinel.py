@@ -1,6 +1,6 @@
+from scripts.evaluate import is_correct
 from sentinel.data import from_finqa, from_llama2, table_to_markdown
 from sentinel.governance import audit, unitless_quantities
-from scripts.evaluate import is_correct
 
 # The actual answer from the notebook's governance cell, which the old regex APPROVED.
 NOTEBOOK_ANSWER = "So, the growth rate is approximately 13.33%. The company has grown from $450M to $510M."
