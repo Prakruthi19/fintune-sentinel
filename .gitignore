@@ -3,3 +3,15 @@ secrets.py
 config.py
 __pycache__/
 *.env
+
+# datasets, training runs, model files
+data/
+runs/
+models/
+*.gguf
+eval_results.json
+.pytest_cache/
+.ruff_cache/
+.coverage
+*.egg-info/
+build/

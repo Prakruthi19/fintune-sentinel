@@ -1,0 +1,420 @@
+[
+ {
+  "pre_text": [
+   "entergy corporation and subsidiaries management 2019s financial discussion and analysis a result of the entergy louisiana and entergy gulf states louisiana business combination , results of operations for 2015 also include two items that occurred in october 2015 : 1 ) a deferred tax asset and resulting net increase in tax basis of approximately $ 334 million and 2 ) a regulatory liability of $ 107 million ( $ 66 million net-of-tax ) as a result of customer credits to be realized by electric customers of entergy louisiana , consistent with the terms of the stipulated settlement in the business combination proceeding .",
+   "see note 2 to the financial statements for further discussion of the business combination and customer credits .",
+   "results of operations for 2015 also include the sale in december 2015 of the 583 mw rhode island state energy center for a realized gain of $ 154 million ( $ 100 million net-of-tax ) on the sale and the $ 77 million ( $ 47 million net-of-tax ) write-off and regulatory charges to recognize that a portion of the assets associated with the waterford 3 replacement steam generator project is no longer probable of recovery .",
+   "see note 14 to the financial statements for further discussion of the rhode island state energy center sale .",
+   "see note 2 to the financial statements for further discussion of the waterford 3 write-off .",
+   "results of operations for 2014 include $ 154 million ( $ 100 million net-of-tax ) of charges related to vermont yankee primarily resulting from the effects of an updated decommissioning cost study completed in the third quarter 2014 along with reassessment of the assumptions regarding the timing of decommissioning cash flows and severance and employee retention costs .",
+   "see note 14 to the financial statements for further discussion of the charges .",
+   "results of operations for 2014 also include the $ 56.2 million ( $ 36.7 million net-of-tax ) write-off in 2014 of entergy mississippi 2019s regulatory asset associated with new nuclear generation development costs as a result of a joint stipulation entered into with the mississippi public utilities staff , subsequently approved by the mpsc , in which entergy mississippi agreed not to pursue recovery of the costs deferred by an mpsc order in the new nuclear generation docket .",
+   "see note 2 to the financial statements for further discussion of the new nuclear generation development costs and the joint stipulation .",
+   "net revenue utility following is an analysis of the change in net revenue comparing 2015 to 2014 .",
+   "amount ( in millions ) ."
+  ],
+  "post_text": [
+   "the retail electric price variance is primarily due to : 2022 formula rate plan increases at entergy louisiana , as approved by the lpsc , effective december 2014 and january 2015 ; 2022 an increase in energy efficiency rider revenue primarily due to increases in the energy efficiency rider at entergy arkansas , as approved by the apsc , effective july 2015 and july 2014 , and new energy efficiency riders at entergy louisiana and entergy mississippi that began in the fourth quarter 2014 ; and 2022 an annual net rate increase at entergy mississippi of $ 16 million , effective february 2015 , as a result of the mpsc order in the june 2014 rate case .",
+   "see note 2 to the financial statements for a discussion of rate and regulatory proceedings. ."
+  ],
+  "table": [
+   [
+    "",
+    "amount ( in millions )"
+   ],
+   [
+    "2014 net revenue",
+    "$ 5735"
+   ],
+   [
+    "retail electric price",
+    "187"
+   ],
+   [
+    "volume/weather",
+    "95"
+   ],
+   [
+    "waterford 3 replacement steam generator provision",
+    "-32 ( 32 )"
+   ],
+   [
+    "miso deferral",
+    "-35 ( 35 )"
+   ],
+   [
+    "louisiana business combination customer credits",
+    "-107 ( 107 )"
+   ],
+   [
+    "other",
+    "-14 ( 14 )"
+   ],
+   [
+    "2015 net revenue",
+    "$ 5829"
+   ]
+  ],
+  "id": "ETR/2016/page_23.pdf-2",
+  "qa": {
+   "question": "what is the net change in net revenue during 2015 for entergy corporation?",
+   "program": "subtract(5829, 5735)",
+   "exe_ans": 94.0
+  }
+ },
+ {
+  "pre_text": [
+   "undesignated hedges was $ 41.2 million and $ 42.1 million , respectively .",
+   "the fair value of these hedging instruments in the company 2019s consolidated balance sheets as of october 29 , 2011 and october 30 , 2010 was immaterial .",
+   "interest rate exposure management 2014 on june 30 , 2009 , the company entered into interest rate swap transactions related to its outstanding 5.0% ( 5.0 % ) senior unsecured notes where the company swapped the notional amount of its $ 375 million of fixed rate debt at 5.0% ( 5.0 % ) into floating interest rate debt through july 1 , 2014 .",
+   "under the terms of the swaps , the company will ( i ) receive on the $ 375 million notional amount a 5.0% ( 5.0 % ) annual interest payment that is paid in two installments on the 1st of every january and july , commencing january 1 , 2010 through and ending on the maturity date ; and ( ii ) pay on the $ 375 million notional amount an annual three month libor plus 2.05% ( 2.05 % ) ( 2.42% ( 2.42 % ) as of october 29 , 2011 ) interest payment , payable in four installments on the 1st of every january , april , july and october , commencing on october 1 , 2009 and ending on the maturity date .",
+   "the libor- based rate is set quarterly three months prior to the date of the interest payment .",
+   "the company designated these swaps as fair value hedges .",
+   "the fair value of the swaps at inception was zero and subsequent changes in the fair value of the interest rate swaps were reflected in the carrying value of the interest rate swaps on the balance sheet .",
+   "the carrying value of the debt on the balance sheet was adjusted by an equal and offsetting amount .",
+   "the gain or loss on the hedged item ( that is , the fixed-rate borrowings ) attributable to the hedged benchmark interest rate risk and the offsetting gain or loss on the related interest rate swaps for fiscal year 2011 and fiscal year 2010 were as follows : statement of income ."
+  ],
+  "post_text": [
+   "the amounts earned and owed under the swap agreements are accrued each period and are reported in interest expense .",
+   "there was no ineffectiveness recognized in any of the periods presented .",
+   "the market risk associated with the company 2019s derivative instruments results from currency exchange rate or interest rate movements that are expected to offset the market risk of the underlying transactions , assets and liabilities being hedged .",
+   "the counterparties to the agreements relating to the company 2019s derivative instruments consist of a number of major international financial institutions with high credit ratings .",
+   "based on the credit ratings of our counterparties as of october 29 , 2011 , we do not believe that there is significant risk of nonperformance by them .",
+   "furthermore , none of the company 2019s derivative transactions are subject to collateral or other security arrangements and none contain provisions that are dependent on the company 2019s credit ratings from any credit rating agency .",
+   "while the contract or notional amounts of derivative financial instruments provide one measure of the volume of these transactions , they do not represent the amount of the company 2019s exposure to credit risk .",
+   "the amounts potentially subject to credit risk ( arising from the possible inability of counterparties to meet the terms of their contracts ) are generally limited to the amounts , if any , by which the counterparties 2019 obligations under the contracts exceed the obligations of the company to the counterparties .",
+   "as a result of the above considerations , the company does not consider the risk of counterparty default to be significant .",
+   "the company records the fair value of its derivative financial instruments in the consolidated financial statements in other current assets , other assets or accrued liabilities , depending on their net position , regardless of the purpose or intent for holding the derivative contract .",
+   "changes in the fair value of the derivative financial instruments are either recognized periodically in earnings or in shareholders 2019 equity as a component of oci .",
+   "changes in the fair value of cash flow hedges are recorded in oci and reclassified into earnings when the underlying contract matures .",
+   "changes in the fair values of derivatives not qualifying for hedge accounting are reported in earnings as they occur .",
+   "the total notional amounts of derivative instruments designated as hedging instruments as of october 29 , 2011 and october 30 , 2010 were $ 375 million of interest rate swap agreements accounted for as fair value hedges and $ 153.7 million and $ 139.9 million , respectively , of cash flow hedges denominated in euros , british pounds and analog devices , inc .",
+   "notes to consolidated financial statements 2014 ( continued ) ."
+  ],
+  "table": [
+   [
+    "statement of income classification",
+    "statement of income loss on swaps",
+    "statement of income gain on note",
+    "statement of income net income effect",
+    "statement of income gain on swaps",
+    "loss on note",
+    "net income effect"
+   ],
+   [
+    "other income",
+    "$ -4614 ( 4614 )",
+    "$ 4614",
+    "$ 2014",
+    "$ 20692",
+    "$ -20692 ( 20692 )",
+    "$ 2014"
+   ]
+  ],
+  "id": "ADI/2011/page_61.pdf-2",
+  "qa": {
+   "question": "what is the percentage change in cash flow hedges in 2011 compare to the 2010?",
+   "program": "subtract(153.7, 139.9), divide(#0, 139.9)",
+   "exe_ans": 0.09864
+  }
+ },
+ {
+  "pre_text": [
+   "performance graph the table below compares the cumulative total shareholder return on our common stock with the cumulative total return of ( i ) the standard & poor's 500 composite stock index ( \"s&p 500 index\" ) , ( ii ) the standard & poor's industrials index ( \"s&p industrials index\" ) and ( iii ) the standard & poor's consumer durables & apparel index ( \"s&p consumer durables & apparel index\" ) , from december 31 , 2012 through december 31 , 2017 , when the closing price of our common stock was $ 43.94 .",
+   "the graph assumes investments of $ 100 on december 31 , 2012 in our common stock and in each of the three indices and the reinvestment of dividends .",
+   "the table below sets forth the value , as of december 31 for each of the years indicated , of a $ 100 investment made on december 31 , 2012 in each of our common stock , the s&p 500 index , the s&p industrials index and the s&p consumer durables & apparel index and includes the reinvestment of dividends. ."
+  ],
+  "post_text": [
+   "$ 50.00 $ 100.00 $ 150.00 $ 200.00 $ 250.00 $ 300.00 $ 350.00 masco s&p 500 index s&p industrials index s&p consumer durables & apparel index ."
+  ],
+  "table": [
+   [
+    "",
+    "2013",
+    "2014",
+    "2015",
+    "2016",
+    "2017"
+   ],
+   [
+    "masco",
+    "$ 138.48",
+    "$ 155.26",
+    "$ 200.79",
+    "$ 227.08",
+    "$ 318.46"
+   ],
+   [
+    "s&p 500 index",
+    "$ 132.04",
+    "$ 149.89",
+    "$ 151.94",
+    "$ 169.82",
+    "$ 206.49"
+   ],
+   [
+    "s&p industrials index",
+    "$ 140.18",
+    "$ 153.73",
+    "$ 149.83",
+    "$ 177.65",
+    "$ 214.55"
+   ],
+   [
+    "s&p consumer durables & apparel index",
+    "$ 135.84",
+    "$ 148.31",
+    "$ 147.23",
+    "$ 138.82",
+    "$ 164.39"
+   ]
+  ],
+  "id": "MAS/2017/page_27.pdf-2",
+  "qa": {
+   "question": "what was the difference in percentage cumulative total shareholder return on masco common stock versus the s&p 500 index for the five year period ended 2017?",
+   "program": "subtract(318.46, const_100), divide(#0, const_100), subtract(206.49, const_100), divide(#2, const_100), subtract(#1, #3)",
+   "exe_ans": 1.1197
+  }
+ },
+ {
+  "pre_text": [
+   "supplementary information on oil and gas producing activities ( unaudited ) changes in the standardized measure of discounted future net cash flows ( in millions ) 2011 2010 2009 ."
+  ],
+  "post_text": [
+   "."
+  ],
+  "table": [
+   [
+    "( in millions )",
+    "2011",
+    "2010",
+    "2009"
+   ],
+   [
+    "sales and transfers of oil and gas produced net of production and administrative costs",
+    "$ -7922 ( 7922 )",
+    "$ -6330 ( 6330 )",
+    "$ -4876 ( 4876 )"
+   ],
+   [
+    "net changes in prices and production and administrative costs related to future production",
+    "12313",
+    "9843",
+    "4840"
+   ],
+   [
+    "extensions discoveries and improved recovery less related costs",
+    "1454",
+    "1268",
+    "1399"
+   ],
+   [
+    "development costs incurred during the period",
+    "1899",
+    "2546",
+    "2786"
+   ],
+   [
+    "changes in estimated future development costs",
+    "-1349 ( 1349 )",
+    "-2153 ( 2153 )",
+    "-3773 ( 3773 )"
+   ],
+   [
+    "revisions of previous quantity estimates",
+    "2526",
+    "1117",
+    "5110"
+   ],
+   [
+    "net changes in purchases and sales of minerals in place",
+    "233",
+    "-20 ( 20 )",
+    "-159 ( 159 )"
+   ],
+   [
+    "accretion of discount",
+    "2040",
+    "1335",
+    "787"
+   ],
+   [
+    "net change in income taxes",
+    "-6676 ( 6676 )",
+    "-4231 ( 4231 )",
+    "-4345 ( 4345 )"
+   ],
+   [
+    "timing and other",
+    "130",
+    "250",
+    "-149 ( 149 )"
+   ],
+   [
+    "net change for the year",
+    "4648",
+    "3625",
+    "1620"
+   ],
+   [
+    "beginning of the year",
+    "9280",
+    "5655",
+    "4035"
+   ],
+   [
+    "end of year",
+    "$ 13928",
+    "$ 9280",
+    "$ 5655"
+   ]
+  ],
+  "id": "MRO/2011/page_108.pdf-1",
+  "qa": {
+   "question": "what was the average net annual change in discounted future net cash flows ( in millions ) for the years 2011 , 2010 , and 2009?",
+   "program": "table_average(net change for the year, none)",
+   "exe_ans": 3297.66667
+  }
+ },
+ {
+  "pre_text": [
+   "2011 2012 2013 2014 2015 2016 comparison of five-year cumulative total shareholder return altria group , inc .",
+   "altria peer group s&p 500 part ii item 5 .",
+   "market for registrant 2019s common equity , related stockholder matters and issuer purchases of equity securities .",
+   "performance graph the graph below compares the cumulative total shareholder return of altria group , inc . 2019s common stock for the last ive years with the cumulative total return for the same period of the s&p 500 index and the altria group , inc .",
+   "peer group ( 1 ) .",
+   "the graph assumes the investment of $ 100 in common stock and each of the indices as of the market close on december 31 , 2011 and the reinvestment of all dividends on a quarterly basis .",
+   "source : bloomberg - 201ctotal return analysis 201d calculated on a daily basis and assumes reinvestment of dividends as of the ex-dividend date .",
+   "( 1 ) in 2016 , the altria group , inc .",
+   "peer group consisted of u.s.-headquartered consumer product companies that are competitors to altria group , inc . 2019s tobacco operating companies subsidiaries or that have been selected on the basis of revenue or market capitalization : campbell soup company , the coca-cola company , colgate-palmolive company , conagra brands , inc. , general mills , inc. , the hershey company , kellogg company , kimberly-clark corporation , the kraft heinz company , mondel 0113z international , inc. , pepsico , inc .",
+   "and reynolds american inc .",
+   "note - on october 1 , 2012 , kraft foods inc .",
+   "( kft ) spun off kraft foods group , inc .",
+   "( krft ) to its shareholders and then changed its name from kraft foods inc .",
+   "to mondel 0113z international , inc .",
+   "( mdlz ) .",
+   "on july 2 , 2015 , kraft foods group , inc .",
+   "merged with and into a wholly owned subsidiary of h.j .",
+   "heinz holding corporation , which was renamed the kraft heinz company ( khc ) .",
+   "on june 12 , 2015 , reynolds american inc .",
+   "( rai ) acquired lorillard , inc .",
+   "( lo ) .",
+   "on november 9 , 2016 , conagra foods , inc .",
+   "( cag ) spun off lamb weston holdings , inc .",
+   "( lw ) to its shareholders and then changed its name from conagra foods , inc .",
+   "to conagra brands , inc .",
+   "( cag ) . ."
+  ],
+  "post_text": [
+   "altria altria group , inc .",
+   "group , inc .",
+   "peer group s&p 500 ."
+  ],
+  "table": [
+   [
+    "date",
+    "altria group inc .",
+    "altria group inc . peer group",
+    "s&p 500"
+   ],
+   [
+    "december 2011",
+    "$ 100.00",
+    "$ 100.00",
+    "$ 100.00"
+   ],
+   [
+    "december 2012",
+    "$ 111.77",
+    "$ 108.78",
+    "$ 115.99"
+   ],
+   [
+    "december 2013",
+    "$ 143.69",
+    "$ 135.61",
+    "$ 153.55"
+   ],
+   [
+    "december 2014",
+    "$ 193.28",
+    "$ 151.74",
+    "$ 174.55"
+   ],
+   [
+    "december 2015",
+    "$ 237.92",
+    "$ 177.04",
+    "$ 176.94"
+   ],
+   [
+    "december 2016",
+    "$ 286.61",
+    "$ 192.56",
+    "$ 198.09"
+   ]
+  ],
+  "id": "MO/2016/page_19.pdf-1",
+  "qa": {
+   "question": "did altria outperform the s&p 500?",
+   "program": "greater(286.61, 198.09)",
+   "exe_ans": "yes"
+  }
+ },
+ {
+  "pre_text": [
+   "the aes corporation notes to consolidated financial statements 2014 ( continued ) december 31 , 2010 , 2009 , and 2008 recourse debt as of december 31 , 2010 is scheduled to reach maturity as set forth in the table below : december 31 , annual maturities ( in millions ) ."
+  ],
+  "post_text": [
+   "recourse debt transactions during 2010 , the company redeemed $ 690 million aggregate principal of its 8.75% ( 8.75 % ) second priority senior secured notes due 2013 ( 201cthe 2013 notes 201d ) .",
+   "the 2013 notes were redeemed at a redemption price equal to 101.458% ( 101.458 % ) of the principal amount redeemed .",
+   "the company recognized a pre-tax loss on the redemption of the 2013 notes of $ 15 million for the year ended december 31 , 2010 , which is included in 201cother expense 201d in the accompanying consolidated statement of operations .",
+   "on july 29 , 2010 , the company entered into a second amendment ( 201camendment no .",
+   "2 201d ) to the fourth amended and restated credit and reimbursement agreement , dated as of july 29 , 2008 , among the company , various subsidiary guarantors and various lending institutions ( the 201cexisting credit agreement 201d ) that amends and restates the existing credit agreement ( as so amended and restated by amendment no .",
+   "2 , the 201cfifth amended and restated credit agreement 201d ) .",
+   "the fifth amended and restated credit agreement adjusted the terms and conditions of the existing credit agreement , including the following changes : 2022 the aggregate commitment for the revolving credit loan facility was increased to $ 800 million ; 2022 the final maturity date of the revolving credit loan facility was extended to january 29 , 2015 ; 2022 changes to the facility fee applicable to the revolving credit loan facility ; 2022 the interest rate margin applicable to the revolving credit loan facility is now based on the credit rating assigned to the loans under the credit agreement , with pricing currently at libor + 3.00% ( 3.00 % ) ; 2022 there is an undrawn fee of 0.625% ( 0.625 % ) per annum ; 2022 the company may incur a combination of additional term loan and revolver commitments so long as total term loan and revolver commitments ( including those currently outstanding ) do not exceed $ 1.4 billion ; and 2022 the negative pledge ( i.e. , a cap on first lien debt ) of $ 3.0 billion .",
+   "recourse debt covenants and guarantees certain of the company 2019s obligations under the senior secured credit facility are guaranteed by its direct subsidiaries through which the company owns its interests in the aes shady point , aes hawaii , aes warrior run and aes eastern energy businesses .",
+   "the company 2019s obligations under the senior secured credit facility are , subject to certain exceptions , secured by : ( i ) all of the capital stock of domestic subsidiaries owned directly by the company and 65% ( 65 % ) of the capital stock of certain foreign subsidiaries owned directly or indirectly by the company ; and ."
+  ],
+  "table": [
+   [
+    "december 31,",
+    "annual maturities ( in millions )"
+   ],
+   [
+    "2011",
+    "$ 463"
+   ],
+   [
+    "2012",
+    "2014"
+   ],
+   [
+    "2013",
+    "2014"
+   ],
+   [
+    "2014",
+    "497"
+   ],
+   [
+    "2015",
+    "500"
+   ],
+   [
+    "thereafter",
+    "3152"
+   ],
+   [
+    "total recourse debt",
+    "$ 4612"
+   ]
+  ],
+  "id": "AES/2010/page_227.pdf-4",
+  "qa": {
+   "question": "what is the annual interest cost savings by the company redeeming the 8.75% ( 8.75 % ) second priority senior secured notes?",
+   "program": "multiply(690, const_1000000), multiply(#0, 8.75%)",
+   "exe_ans": 60375000.0
+  }
+ }
+]
