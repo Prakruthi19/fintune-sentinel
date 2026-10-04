@@ -11,3 +11,7 @@ models/
 *.gguf
 eval_results.json
 .pytest_cache/
+.ruff_cache/
+.coverage
+*.egg-info/
+build/
