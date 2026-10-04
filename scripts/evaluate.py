@@ -16,7 +16,6 @@ import re
 import statistics
 import time
 
-from llama_cpp import Llama
 
 from sentinel.data import SYSTEM_PROMPT, from_finqa
 from sentinel.governance import audit
@@ -52,6 +51,8 @@ def is_correct(pred_text, gold):
 
 
 def run(model_path, examples, threads, n_ctx):
+    from llama_cpp import Llama  # imported here so tests and CI don't need the inference runtime
+
     llm = Llama(model_path=model_path, n_ctx=n_ctx, n_threads=threads, n_gpu_layers=0, verbose=False)
     rows = []
     for ex in examples:
