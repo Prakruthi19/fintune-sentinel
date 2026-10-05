@@ -21,7 +21,7 @@ from finbench.data import Example, load_examples, stratified_sample
 from finbench.fewshot import pick_fewshot
 from finbench.model import ChatModel, OpenAICompatibleModel
 from finbench.report import summarize
-from finbench.scoring import answers_match, classify
+from finbench.scoring import answers_match, classify, text_answer
 from finbench.tools import execute_gold_program
 
 
@@ -43,7 +43,10 @@ def evaluate_one(model: ChatModel, ex: Example, fewshot: list[dict], max_turns: 
                  if c.name == "calculate" and not c.error and c.arguments]
     prior_results = [c.result for c in traj.tool_calls if not c.error and c.name != "final_answer"]
     verdict = classify(ex.program, ex.gold, traj.final_answer, calc_args,
-                       any_tool_called=bool(traj.tool_calls), prior_results=prior_results)
+                       any_tool_called=bool(traj.tool_calls), prior_results=prior_results,
+                       model_error=traj.stop_reason == "model_error")
+    last_text = traj.turns[-1].content if traj.turns else None
+    lenient = verdict.correct or (traj.final_answer is None and answers_match(text_answer(last_text), ex.gold))
     return {
         "id": ex.id,
         "num_steps": ex.num_steps,
@@ -51,6 +54,7 @@ def evaluate_one(model: ChatModel, ex: Example, fewshot: list[dict], max_turns: 
         "gold_program": ex.program,
         "prediction": traj.final_answer,
         "correct": verdict.correct,
+        "lenient_correct": bool(lenient),
         "category": verdict.category,
         "stop_reason": traj.stop_reason,
         "error": traj.error,
@@ -62,6 +66,22 @@ def evaluate_one(model: ChatModel, ex: Example, fewshot: list[dict], max_turns: 
         "completion_tokens": traj.completion_tokens,
         "final_text": traj.turns[-1].content if traj.turns else None,
     }
+
+
+MAX_CONSECUTIVE_MODEL_ERRORS = 3
+
+
+def load_rows(path: Path) -> list[dict]:
+    """Rows from predictions.jsonl, keeping the LAST row per id (a retried
+    item replaces its earlier failed attempt)."""
+    if not path.exists():
+        return []
+    latest: dict[str, dict] = {}
+    for line in path.read_text().splitlines():
+        if line.strip():
+            r = json.loads(line)
+            latest[r["id"]] = r
+    return list(latest.values())
 
 
 def git_sha() -> str:
@@ -99,9 +119,8 @@ def run(model: ChatModel, test: list[Example], train: list[Example], out_dir: Pa
     (out_dir / "sample_ids.txt").write_text("\n".join(e.id for e in sample) + "\n")
 
     pred_path = out_dir / "predictions.jsonl"
-    done = set()
-    if pred_path.exists():
-        done = {json.loads(line)["id"] for line in pred_path.read_text().splitlines() if line.strip()}
+    done = {r["id"] for r in load_rows(pred_path) if r["category"] != "model_error"}  # retry failed calls
+    consecutive_errors = 0
     with pred_path.open("a") as f:
         for i, ex in enumerate(sample, 1):
             if ex.id in done:
@@ -110,8 +129,13 @@ def run(model: ChatModel, test: list[Example], train: list[Example], out_dir: Pa
             f.write(json.dumps(row, default=str) + "\n")
             f.flush()
             print(f"[{i}/{len(sample)}] {ex.id}: {row['category']} ({row['latency_s']}s)", flush=True)
+            consecutive_errors = consecutive_errors + 1 if row["category"] == "model_error" else 0
+            if consecutive_errors >= MAX_CONSECUTIVE_MODEL_ERRORS:
+                raise SystemExit(f"stopping: {consecutive_errors} model calls failed in a row. "
+                                 f"Last error: {row['error']}\nFix the model/server and rerun the same "
+                                 f"command; failed items are retried.")
 
-    rows = [json.loads(line) for line in pred_path.read_text().splitlines() if line.strip()]
+    rows = load_rows(pred_path)
     summary = summarize(rows)
     summary["config"] = {k: config[k] for k in ("model", "n", "fewshot_k", "seed", "git_sha")}
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2))
