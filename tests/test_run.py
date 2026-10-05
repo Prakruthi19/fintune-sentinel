@@ -44,3 +44,39 @@ def test_wilson_interval_and_summary_math():
     s = summarize(rows)
     assert s["accuracy"] == 0.75 and s["accuracy_by_steps"]["3+"] == {"n": 1, "accuracy": 1.0}
     assert s["latency_s"] == {"p50": 2.0, "p95": 10.0}
+
+
+class DownModel:
+    """Every call fails, like an Ollama tag that was never pulled."""
+    name = "missing-model"
+
+    def complete(self, messages, tools):
+        raise RuntimeError("model 'missing-model' not found")
+
+
+def test_fails_fast_when_the_server_keeps_failing(examples, tmp_path):
+    exs = list(examples.values())
+    with pytest.raises(SystemExit, match="3 model calls failed in a row.*not found"):
+        run(DownModel(), exs, exs, tmp_path / "down", n=6, fewshot_k=0, seed=0, max_turns=8)
+
+
+def test_failed_items_are_retried_and_replaced_on_resume(examples, tmp_path):
+    exs = list(examples.values())
+    out = tmp_path / "retry"
+    with pytest.raises(SystemExit):
+        run(DownModel(), exs, exs, out, n=6, fewshot_k=0, seed=0, max_turns=8)
+    gold = GoldModel(exs)
+    gold.name = "missing-model"  # same run config, server now fixed
+    summary = run(gold, exs, exs, out, n=6, fewshot_k=0, seed=0, max_turns=8)
+    assert summary["n"] == 6 and summary["accuracy"] == 1.0 and summary["excluded_model_errors"] == 0
+
+
+def test_model_errors_are_excluded_from_accuracy_and_lenient_counts_text_answers():
+    base = {"num_steps": 1, "tool_calls": [], "invalid_calls": 0, "latency_s": 1.0,
+            "prompt_tokens": 1, "completion_tokens": 1}
+    rows = [{**base, "correct": False, "lenient_correct": False, "category": "model_error"},
+            {**base, "correct": True, "lenient_correct": True, "category": "correct"},
+            {**base, "correct": False, "lenient_correct": True, "category": "no_final_answer"}]
+    s = summarize(rows)
+    assert s["n"] == 2 and s["excluded_model_errors"] == 1
+    assert s["accuracy"] == 0.5 and s["lenient_accuracy"] == 1.0

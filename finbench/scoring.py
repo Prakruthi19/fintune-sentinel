@@ -6,6 +6,7 @@ operations, scale), not to be a perfect judge of each item.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from finbench.program import constants, literal_operands, operations, parse_number
@@ -66,6 +67,7 @@ class Verdict:
 
 CATEGORIES = [
     "correct",
+    "model_error",       # the server call failed (model missing, crash, timeout): NOT a model mistake
     "no_tool_use",       # answered in plain text, never called a tool
     "no_final_answer",   # used tools but never submitted (or ran out of steps)
     "scale_error",       # 100x / 1000x off: percent vs decimal, thousands vs millions
@@ -77,12 +79,14 @@ CATEGORIES = [
 
 
 def classify(program: str, gold, final, calculate_calls: list[dict], any_tool_called: bool,
-             prior_results: list) -> Verdict:
+             prior_results: list, model_error: bool = False) -> Verdict:
     """calculate_calls: successful calculate() argument dicts in order.
     prior_results: results of earlier tool calls (so reused intermediate
     results are not mistaken for numbers copied from the filing)."""
     if final is not None and answers_match(final, gold):
         return Verdict(True, "correct")
+    if model_error and not any_tool_called:
+        return Verdict(False, "model_error")
     if not any_tool_called:
         return Verdict(False, "no_tool_use")
     if final is None:
@@ -108,3 +112,23 @@ def classify(program: str, gold, final, calculate_calls: list[dict], any_tool_ca
     if operations(program) != [a.get("operation") for a in calculate_calls]:
         return Verdict(False, "wrong_operations")
     return Verdict(False, "wrong_arrangement")
+
+
+_NUMBER = re.compile(r"-?\$?\d[\d,]*\.?\d*\s*%?")
+
+
+def text_answer(text: str | None):
+    """Best-effort answer from a plain-text reply: 'yes'/'no' or the LAST
+    number in the text ('... is 28.24%.' -> 0.2824). Heuristic, used only
+    for the lenient score, which separates 'reasoned correctly but ignored
+    the answer format' from 'reasoned wrongly'."""
+    if not text:
+        return None
+    low = text.lower()
+    found = _NUMBER.findall(text)
+    if found:
+        return to_float(found[-1].replace(" ", ""))
+    for word in ("yes", "no"):
+        if re.search(rf"\b{word}\b", low):
+            return word
+    return None
