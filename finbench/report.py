@@ -34,6 +34,8 @@ def percentile(values: list[float], q: float) -> float:
 
 
 def summarize(rows: list[dict]) -> dict:
+    model_errors = sum(r["category"] == "model_error" for r in rows)
+    rows = [r for r in rows if r["category"] != "model_error"]  # infrastructure failures are not scored
     n = len(rows)
     k = sum(r["correct"] for r in rows)
     lo, hi = wilson_interval(k, n)
@@ -47,8 +49,10 @@ def summarize(rows: list[dict]) -> dict:
     lat = [r["latency_s"] for r in rows]
     return {
         "n": n,
+        "excluded_model_errors": model_errors,
         "accuracy": round(k / n, 4) if n else 0.0,
         "accuracy_95ci": [round(lo, 4), round(hi, 4)],
+        "lenient_accuracy": round(sum(r.get("lenient_correct", r["correct"]) for r in rows) / n, 4) if n else 0.0,
         "accuracy_by_steps": by_steps,
         "error_categories": {c: cats.get(c, 0) for c in CATEGORIES},
         "invalid_tool_call_rate": round(sum(r["invalid_calls"] for r in rows) / total_calls, 4) if total_calls else 0.0,
@@ -61,13 +65,14 @@ def summarize(rows: list[dict]) -> dict:
 def compare_markdown(run_dirs: list[Path]) -> str:
     runs = [(d.name, json.loads((d / "summary.json").read_text()),
              json.loads((d / "config.json").read_text())) for d in run_dirs]
-    head = ("| run | model | few-shot | n | accuracy (95% CI) | invalid calls | "
-            "p50 / p95 latency (s) | hardware |\n|---|---|---|---|---|---|---|---|")
+    head = ("| run | model | few-shot | n | accuracy (95% CI) | lenient accuracy | invalid calls | "
+            "p50 / p95 latency (s) | hardware |\n|---|---|---|---|---|---|---|---|---|")
     lines = [head]
     for name, s, c in runs:
         lo, hi = s["accuracy_95ci"]
         lines.append(f"| {name} | {c['model']} | {c['fewshot_k']} | {s['n']} | "
-                     f"{s['accuracy']:.1%} ({lo:.1%}–{hi:.1%}) | {s['invalid_tool_call_rate']:.1%} | "
+                     f"{s['accuracy']:.1%} ({lo:.1%}–{hi:.1%}) | {s.get('lenient_accuracy', 0):.1%} | "
+                     f"{s['invalid_tool_call_rate']:.1%} | "
                      f"{s['latency_s']['p50']} / {s['latency_s']['p95']} | {c.get('hardware') or 'not recorded'} |")
     lines.append("\n**Where the errors are** (count of items per category)\n")
     lines.append("| run | " + " | ".join(CATEGORIES) + " |")

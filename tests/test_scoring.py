@@ -1,6 +1,6 @@
 import pytest
 
-from finbench.scoring import answers_match, classify, is_scale_error, to_float
+from finbench.scoring import answers_match, classify, is_scale_error, text_answer, to_float
 
 PROG = "subtract(153.7, 139.9), divide(#0, 139.9)"
 GOLD = 0.09864
@@ -79,3 +79,21 @@ def test_wrong_operations_with_right_numbers():
 def test_wrong_arrangement_divided_by_wrong_year():
     v = classify(PROG, GOLD, 0.0898, [calc("subtract", 153.7, 139.9), calc("divide", 13.8, 153.7)], True, [13.8])
     assert v.category == "wrong_arrangement"
+
+
+def test_server_failure_is_model_error_not_a_model_mistake():
+    assert classify(PROG, GOLD, None, [], False, [], model_error=True).category == "model_error"
+
+
+@pytest.mark.parametrize("text,value", [
+    # real replies from the first llama3.2:3b run
+    ("The total number of shares Mr. Oppenheimer would have if his RSUs vest is 599,768.", 599768.0),
+    ("The percent of net interest revenue ... in 2009 is approximately 28.24%.", 0.2824),
+    ("The ROI of an investment in State Street Corporation from 2011 to 2012 is 13.0%.", 0.13),
+    ("Yes, it was higher.", "yes"),
+    ("I could not find it.", None),
+    (None, None),
+])
+def test_text_answer_takes_last_number(text, value):
+    got = text_answer(text)
+    assert got == value or (isinstance(value, float) and abs(got - value) < 1e-9)
