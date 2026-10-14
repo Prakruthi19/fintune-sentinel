@@ -1,85 +1,104 @@
-# 🛡️ FinTune-Sentinel: SEC-Compliant Financial Auditor
-> **A high-efficiency 3B parameter LLM optimized for financial reasoning and regulatory safety on commodity hardware.**
+# 🛡️ FinTune-Sentinel: a 3B financial analyst LLM that runs on a laptop CPU
+
+[![tests](https://github.com/Prakruthi19/fintune-sentinel/actions/workflows/tests.yml/badge.svg)](https://github.com/Prakruthi19/fintune-sentinel/actions/workflows/tests.yml)
+
+> Llama 3.2 3B fine-tuned on SEC 10-K and FinQA data, quantized to 4-bit GGUF, served on CPU with `llama.cpp`, and every answer checked by a compliance layer before the user sees it.
+
+**Live demo:** _coming soon (Hugging Face Space)_
 
 ---
 
-## 📌 Overview
-**FinTune-Sentinel** is a specialized financial intelligence engine designed to solve the "hallucination problem" in automated 10-K analysis. While general LLMs often provide vague or unformatted financial data, Sentinel acts as a **Senior Financial Analyst**—providing deterministic, unit-accurate, and compliant audits.
+## Why
 
-### Key Innovations:
-* **CPU-Optimized Inference:** Custom-compiled `llama.cpp` core achieving **10-15 tokens/sec** on standard CPUs (No GPU required).
-* **Policy-Sentinel Layer:** A custom programmatic guardrail that intercepts and audits every response for regulatory compliance.
-* **4-Bit Quantization:** Leverages the **GGUF (Q4_K_M)** format to reduce memory footprint by 75% without sacrificing analytical depth.
+General-purpose LLMs answering questions about 10-K filings tend to (1) do arithmetic loosely, (2) drop units ("revenue grew 1.133"), and (3) drift into investment advice, which is a liability for any regulated firm. FinTune-Sentinel targets all three on hardware an analyst already has: no GPU at inference time.
 
----
+## Architecture
 
-## 🚀 The "Sentinel" Tech Stack
-* **Base Model:** Llama 3.2 3B Instruct
-* **Fine-Tuning:** QLoRA (4-bit) on specialized FinQA & SEC 10-K datasets.
-* **Inference Engine:** `llama-cpp-python` (C++ backend with **AVX2/SIMD** hardware acceleration).
-* **Governance:** Regex-based Compliance Auditor (Unit integrity & Trade-advice redaction).
-* **UI/UX:** Gradio-based Hybrid Chat & Audit Dashboard.
+```mermaid
+flowchart LR
+    A[10-K Q&A<br/>Finance theory<br/>FinQA tables] --> B[sentinel/data.py<br/>one chat template]
+    B --> C[QLoRA SFT<br/>Unsloth, T4 GPU]
+    C --> D[Merge + quantize<br/>GGUF Q4_K_M, ~2 GB]
+    D --> E[llama.cpp on CPU<br/>mmap + AVX2]
+    E --> F[Policy-Sentinel<br/>compliance audit]
+    F --> G[Gradio UI]
+```
 
----
-
-## 📊 Benchmarks: Sentinel-3B vs. Industry Standard (8B)
-| Metric | FinGPT-v3 (8B) | **FinTune-Sentinel (3B)** |
+| Component | What it does | Code |
 | :--- | :--- | :--- |
-| **Hardware Requirement** | 8GB+ VRAM (GPU) | **Standard Laptop (CPU)** |
-| **YoY Revenue Growth** | Frequent Timeouts | **✅ Precise Calculation** |
-| **Solvency Analysis** | Generic/Vague | **✅ Detailed Ratio Audit** |
-| **Compliance Status** | Unmonitored | **✅ Real-time Safety Gating** |
+| Data pipeline | Converts three datasets into one chat format; renders FinQA tables as markdown and its gold calculation program as step-by-step targets | `sentinel/data.py` |
+| Training | QLoRA (r=32) on all attention + MLP projections, loss on assistant tokens only, held-out eval split, GGUF export | `scripts/train_sft.py` |
+| Inference | `llama-cpp-python`, 4-bit Q4_K_M weights, model's own Llama-3 chat template | `app.py` |
+| Policy-Sentinel | Redacts trade recommendations; flags financial figures with no unit | `sentinel/governance.py` |
+| Evaluation | FinQA execution accuracy, unit compliance, trade-advice rate, CPU latency and tokens/sec | `scripts/evaluate.py` |
+| Quantization explainer | From-scratch Q4_0 and NF4 quantizers plus a GGUF header writer/reader | `scripts/quant_demo.py` |
 
----
+## Results
 
-## 🛡️ The Governance Layer (Policy-Sentinel)
-To ensure professional-grade reliability, every response is passed through an automated auditor before reaching the user:
-1.  **Numerical Integrity:** Rejects answers containing numbers without proper units ($ or %).
-2.  **Liability Mitigation:** Automatically flags and redacts prohibited trade advice (e.g., "BUY", "SELL").
-3.  **Deterministic Persona:** Maintains a neutral, analytical tone suitable for professional SEC auditing.
+Measured with `scripts/evaluate.py` on the held-out FinQA test set (CPU only, `llama.cpp`, temperature 0).
 
----
+| Model | FinQA exec. accuracy | Answers with unit-less figures | Trade-advice rate | Median latency | Gen tok/s |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Llama 3.2 3B Instruct (base, Q4_K_M) | _pending_ | | | | |
+| Sentinel v1 (Q4_K_M) | _pending_ | | | | |
+| Sentinel v2 (Q4_K_M) | _pending_ | | | | |
 
-## 🛠️ How it stays CPU Efficient
-This project achieves high-speed performance on CPUs through three primary optimizations:
-1. **Weight Compression:** Quantizing the model to 4-bit lowers RAM bandwidth bottlenecks.
-2. **SIMD Vectorization:** Utilizing **AVX2/FMA** instructions to perform multiple mathematical operations in a single clock cycle.
-3. **Memory Mapping (mmap):** Efficiently managing I/O so only required model weights are pulled into active memory.
+Hardware: _to be filled in_.
 
-## 🛠️ Performance Architecture
+## Policy-Sentinel
 
-![LLM CPU Optimization Workflow](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*9io6C9f3o5OiwGHhwhGWSw.png)
-> **Image Source:** [Lakshmi Devi Prakash / Kompact AI](https://medium.com/@datascientist.lakshmi/kompact-ai-running-llms-on-cpus-without-sacrificing-performance-e1fe70fc2a6a) — *Demonstrating the SIMD vectorization and mmap-based memory efficiency used in FinTune-Sentinel.*
----
+Every response passes through `audit()` before it is shown:
 
-## 🧠 Why this Architecture Matters
-By implementing the "Kompact" style of CPU inference, **FinTune-Sentinel** achieves:
-1. **Lazy Loading:** Using `mmap` to map the 2.02GB model file without consuming physical RAM until the moment of inference.
-2. **Parallel Math:** Leveraging **AVX2/SIMD** instructions to calculate financial ratios 4x faster than standard Python-based LLMs.
----
+1. **Trade advice → `REJECTED`.** Phrase-level patterns ("strong buy rating", "I recommend selling", "price target") are redacted and a disclaimer is appended. Accounting vocabulary such as *selling, general & administrative*, *shareholders* and *buyback* is deliberately not matched (the v1 substring check flagged all of them).
+2. **Unit-less figures → `FLAGGED`.** Decimals and values ≥ 100 with no `$`, `%`, or scale word are reported; years, list numbers and labels like "Item 1A" are ignored.
+3. Otherwise **`APPROVED`.** The status is shown under every answer.
 
-## The Training Data: Three Pillars of Financial IQ 🧠
+## What I learned building v2
 
-## 📚 Training Data & Knowledge Strategy
-To move beyond general chat and master SEC-level auditing, **FinTune-Sentinel** was trained on a specialized "Triple-Pillar" data stack:
+Auditing the v1 training run turned up real bugs. Fixing them was most of the work:
 
-1. **10-K Comprehensive Q&A (Geography):** - **Dataset:** [Financial Q&A-10k by Yousef Saeedian](https://www.kaggle.com/datasets/yousefsaeedian/financial-q-and-a-10k)
-   - **Role:** Teaches the model the structure and "geography" of SEC filings to locate specific risk factors and financial items.
+- **Questions and answers were swapped** for the finance-theory dataset: the parser put the answer in the user turn and left the assistant turn empty.
+- **Leaked Llama-2 tokens:** `</s>` was left inside training targets, so the fine-tuned model printed a literal `</s>`.
+- **Truncation cut off answers:** long 10-K contexts were truncated from the end, removing the very text the model was supposed to learn. v2 drops over-length examples instead.
+- **Loss was dominated by the prompt:** v2 masks system and user tokens so only the analyst's answer is learned.
+- **FinQA had no reasoning targets:** v2 turns the gold program (`subtract(510, 450), divide(#0, 450)`) into numbered calculation steps, and keeps dev/test out of training.
+- **Duplicate BOS / hand-built prompts:** training and inference now share the tokenizer's chat template.
+- **Eyeball evaluation:** three hand-picked prompts were replaced by a scored benchmark.
 
-2. **Expert Theory & Reasoning (Finance IQ):** - **Dataset:** [Finance-Llama2-1k by Yousef Saeedian](https://www.kaggle.com/datasets/yousefsaeedian/finance-llama2-1k)
-   - **Role:** Masters complex high-level concepts such as yield-to-maturity, debt-to-equity ratios, and currency hedging strategies.
+## Limitations
 
-3. **Numerical Precision (FinQA):** - **Dataset:** [Question Answering on Financial Data by Visalakshi Iyer](https://www.kaggle.com/datasets/visalakshiiyer/question-answering-financial-data)
-   - **Role:** Forces the model to follow a strict mathematical program for YoY growth calculations and multi-step numerical reasoning.
+- Policy-Sentinel is rule-based (regex), not a learned classifier: it is transparent and fast, but paraphrased advice can slip through.
+- The unit check does not verify that a number is *correct* or present in the source filing; grounding against the provided context is the next planned check.
+- 3B parameters limit multi-step reasoning on long tables; the model is an analyst's assistant, not a replacement.
 
-## 🚦 Quick Start
-### Prerequisites
-* Python 3.10+
-* C++ Build Tools (CMake)
+## Training data
 
-### Installation
+1. [Financial Q&A-10k](https://www.kaggle.com/datasets/yousefsaeedian/financial-q-and-a-10k): questions grounded in 10-K passages.
+2. [Finance-Llama2-1k](https://www.kaggle.com/datasets/yousefsaeedian/finance-llama2-1k): finance concepts (YTM, D/E, hedging).
+3. [FinQA](https://www.kaggle.com/datasets/visalakshiiyer/question-answering-financial-data): numerical reasoning over filing tables, with gold calculation programs.
+
+## Quick start
+
+Requires Python 3.10–3.12 (prebuilt CPU wheels for `llama-cpp-python`).
+
 ```bash
-git clone [https://github.com/Prakruthi19/FinTune-Sentinel.git](https://github.com/Prakruthi19/FinTune-Sentinel.git)
-cd FinTune-Sentinel
+git clone https://github.com/Prakruthi19/fintune-sentinel.git
+cd fintune-sentinel
 pip install -r requirements.txt
-python app.py
+python app.py            # downloads the GGUF (~2 GB) and opens http://localhost:7860
+```
+
+Docker:
+
+```bash
+docker build -t sentinel . && docker run -p 8080:8080 sentinel
+```
+
+Other entry points:
+
+```bash
+python -m pytest -q                                   # unit tests (no model needed)
+python scripts/quant_demo.py                          # quantization walkthrough
+python -m scripts.evaluate --finqa data/test.json --n 100 --model v1=models/sentinel-v1.Q4_K_M.gguf
+python -m scripts.train_sft --load-in-4bit --out runs/v2   # GPU; see notebooks/train_v2_kaggle.ipynb
+```
