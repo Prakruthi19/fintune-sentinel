@@ -4,7 +4,7 @@
 
 > Llama 3.2 3B fine-tuned on SEC 10-K and FinQA data, quantized to 4-bit GGUF, served on CPU with `llama.cpp`, and every answer checked by a compliance layer before the user sees it.
 
-**Live demo:** _coming soon (Hugging Face Space)_
+**Live demo:** https://fintune-sentinel-245006759125.us-east4.run.app (Google Cloud Run, CPU only; the first request after idle takes ~30 s to wake up)
 
 ---
 
