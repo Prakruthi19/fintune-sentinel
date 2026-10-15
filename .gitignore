@@ -11,3 +11,4 @@ models/
 *.gguf
 eval_results.json
 .pytest_cache/
+.venv/
