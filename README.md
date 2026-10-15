@@ -35,15 +35,20 @@ flowchart LR
 
 ## Results
 
-Measured with `scripts/evaluate.py` on the held-out FinQA test set (CPU only, `llama.cpp`, temperature 0).
+**Quality** — `scripts/evaluate.py` on 300 held-out FinQA test questions, identical Q4_K_M GGUF files run through `llama.cpp`, temperature 0. (Scores don't depend on hardware, so this runs on a Kaggle T4 for speed.)
 
-| Model | FinQA exec. accuracy | Answers with unit-less figures | Trade-advice rate | Median latency | Gen tok/s |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| Llama 3.2 3B Instruct (base, Q4_K_M) | _pending_ | | | | |
-| Sentinel v1 (Q4_K_M) | _pending_ | | | | |
-| Sentinel v2 (Q4_K_M) | _pending_ | | | | |
+| Model | FinQA exec. accuracy | Answers with unit-less figures | Trade-advice rate |
+| :--- | :--- | :--- | :--- |
+| Llama 3.2 3B Instruct (base) | _pending_ | | |
+| Sentinel v1 | _pending_ | | |
+| Sentinel v2 | _pending_ | | |
 
-Hardware: _to be filled in_.
+**Speed on CPU only** (Q4_K_M, ~2 GB):
+
+| Hardware | Generation speed | Example |
+| :--- | :--- | :--- |
+| Laptop, Intel i5-1334U (15 W, 2 P-cores), 16 GB RAM | ~3 tokens/s | short answer in ~13 s |
+| Google Cloud Run, 2 vCPU / 4 GB | _pending_ | YoY growth question answered in ~21 s |
 
 ## Policy-Sentinel
 
