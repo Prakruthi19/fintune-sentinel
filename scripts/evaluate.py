@@ -15,6 +15,7 @@ Kaggle) while speed is measured separately with a small --n on the target CPU.
 """
 import argparse
 import json
+import os
 import re
 import statistics
 import time
@@ -109,13 +110,15 @@ def main():
             examples.append({"id": e.get("id"), "gold": e["qa"].get("exe_ans", e["qa"]["answer"]), "messages": msgs})
     examples = examples[: args.n]
 
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     report = {}
     for spec in args.model:
         name, path = spec.split("=", 1)
         rows = run(path, examples, args.threads, args.n_ctx, args.gpu_layers)
         report[name] = {"summary": summarize(rows), "rows": rows}
         print(name, json.dumps(report[name]["summary"], indent=2))
-    json.dump(report, open(args.out, "w"), indent=2)
+        with open(args.out, "w") as f:  # after every model, so a late crash keeps the finished runs
+            json.dump(report, f, indent=2)
 
     print("\n| Model | FinQA exec acc | Unit-less rate | Trade-advice rate | Median latency | Gen tok/s |")
     print("|---|---|---|---|---|---|")
