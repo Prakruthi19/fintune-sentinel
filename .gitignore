@@ -12,3 +12,7 @@ models/
 eval_results.json
 .pytest_cache/
 .venv/
+
+# web UI
+web/node_modules/
+web/dist/

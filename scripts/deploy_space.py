@@ -1,13 +1,12 @@
-"""Publishes the Gradio app to a free CPU Hugging Face Space.
+"""Publishes the app (FastAPI + React UI, built by the Dockerfile) to a free CPU Hugging Face Space.
 
     huggingface-cli login            # token with write access
     python -m scripts.deploy_space --space Prakruthi/FinTune-Sentinel
 
-To serve a different GGUF (e.g. v2), pass --model-repo / --model-file; they become Space variables.
+To serve a different GGUF (e.g. v2), pass --model-repo / --model-file; they become Space variables,
+which Docker Spaces pass to the image build as build args.
 """
 import argparse
-import os
-import tempfile
 
 from huggingface_hub import HfApi
 
@@ -16,12 +15,10 @@ title: FinTune-Sentinel
 emoji: 🛡️
 colorFrom: indigo
 colorTo: gray
-sdk: gradio
-sdk_version: 5.9.1
-python_version: "3.10"
-app_file: app.py
+sdk: docker
+app_port: 8080
 pinned: false
-short_description: 3B financial analyst LLM on CPU with a compliance auditor
+short_description: Free financial health check for small businesses
 ---
 
 Source: https://github.com/Prakruthi19/fintune-sentinel
@@ -36,22 +33,18 @@ def main():
     args = p.parse_args()
 
     api = HfApi()
-    api.create_repo(args.space, repo_type="space", space_sdk="gradio", exist_ok=True)
+    api.create_repo(args.space, repo_type="space", space_sdk="docker", exist_ok=True)
     for key, value in (("MODEL_REPO", args.model_repo), ("MODEL_FILE", args.model_file)):
         if value:
             api.add_space_variable(args.space, key, value)
 
-    with tempfile.TemporaryDirectory() as tmp:
-        open(os.path.join(tmp, "README.md"), "w", encoding="utf-8").write(SPACE_README)
-        # The Space pins Gradio via sdk_version, so drop it from requirements to avoid a conflict.
-        reqs = [l for l in open("requirements.txt").read().splitlines() if not l.startswith("gradio")]
-        open(os.path.join(tmp, "requirements.txt"), "w").write("\n".join(reqs) + "\n")
-        for path in ("README.md", "requirements.txt"):
-            api.upload_file(path_or_fileobj=os.path.join(tmp, path), path_in_repo=path,
-                            repo_id=args.space, repo_type="space")
-    api.upload_file(path_or_fileobj="app.py", path_in_repo="app.py", repo_id=args.space, repo_type="space")
-    api.upload_folder(folder_path="sentinel", path_in_repo="sentinel", repo_id=args.space, repo_type="space",
-                      ignore_patterns=["__pycache__/*"])
+    api.upload_file(path_or_fileobj=SPACE_README.encode(), path_in_repo="README.md",
+                    repo_id=args.space, repo_type="space")
+    for path in ("Dockerfile", ".dockerignore", "app.py", "requirements.txt"):
+        api.upload_file(path_or_fileobj=path, path_in_repo=path, repo_id=args.space, repo_type="space")
+    for folder in ("sentinel", "web"):
+        api.upload_folder(folder_path=folder, path_in_repo=folder, repo_id=args.space, repo_type="space",
+                          ignore_patterns=["__pycache__/*", "node_modules/*", "dist/*"])
     print(f"Deployed: https://huggingface.co/spaces/{args.space} (first build takes ~5-10 min)")
 
 

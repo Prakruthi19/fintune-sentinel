@@ -1,0 +1,10 @@
+.git
+.venv
+data
+runs
+models
+notebooks
+**/__pycache__
+web/node_modules
+web/dist
+*.gguf

@@ -1,8 +1,12 @@
-# 🛡️ FinTune-Sentinel: a 3B financial analyst LLM that runs on a laptop CPU
+# 🛡️ Sentinel: a free financial health check for small businesses
 
 [![tests](https://github.com/Prakruthi19/fintune-sentinel/actions/workflows/tests.yml/badge.svg)](https://github.com/Prakruthi19/fintune-sentinel/actions/workflows/tests.yml)
 
-> Llama 3.2 3B fine-tuned on SEC 10-K and FinQA data, quantized to 4-bit GGUF, served on CPU with `llama.cpp`, and every answer checked by a compliance layer before the user sees it.
+> Type in (or paste) a few numbers from your profit & loss and balance sheet and get a health score, rated growth, profit, cash and debt checks with the exact calculation behind each one, and a plain-English summary with questions for your accountant. No sign-up, nothing saved, no investment advice.
+
+**Who it's for:** small business owners and freelancers who want to understand their own numbers, and finance students (an *Ask a question* mode explains concepts with the working shown).
+
+**How it works:** every ratio is computed exactly in Python (`sentinel/health.py`). A Llama 3.2 3B model, fine-tuned on SEC 10-K and FinQA data and quantized to 4-bit GGUF so it runs on a plain CPU, only writes the explanation, and every word it writes passes a compliance layer that blocks investment advice.
 
 **Live demo:** https://fintune-sentinel-245006759125.us-east4.run.app (Google Cloud Run, CPU only; the first request after idle takes ~30 s to wake up)
 
@@ -21,14 +25,16 @@ flowchart LR
     C --> D[Merge + quantize<br/>GGUF Q4_K_M, ~2 GB]
     D --> E[llama.cpp on CPU<br/>mmap + AVX2]
     E --> F[Policy-Sentinel<br/>compliance audit]
-    F --> G[Gradio UI]
+    F --> G[React UI<br/>streamed over SSE]
 ```
 
 | Component | What it does | Code |
 | :--- | :--- | :--- |
 | Data pipeline | Converts three datasets into one chat format; renders FinQA tables as markdown and its gold calculation program as step-by-step targets | `sentinel/data.py` |
 | Training | QLoRA (r=32) on all attention + MLP projections, loss on assistant tokens only, held-out eval split, GGUF export | `scripts/train_sft.py` |
-| Inference | `llama-cpp-python`, 4-bit Q4_K_M weights, model's own Llama-3 chat template | `app.py` |
+| Inference API | `llama-cpp-python`, 4-bit Q4_K_M weights, model's own Llama-3 chat template; FastAPI streams tokens over server-sent events, redacting trade advice as it is generated | `app.py` |
+| Health check | Type the numbers in or upload a statement (PDF, Excel, Word, CSV, read in memory), statement parser, exact ratio math, good/watch/risk ratings and a health score; the model explains the results | `sentinel/health.py` |
+| Web app | React + TypeScript + Tailwind: health check form and report, Ask mode, light/dark, print to PDF | `web/` |
 | Policy-Sentinel | Redacts trade recommendations; flags financial figures with no unit | `sentinel/governance.py` |
 | Evaluation | FinQA execution accuracy, unit compliance, trade-advice rate, CPU latency and tokens/sec | `scripts/evaluate.py` |
 | Quantization explainer | From-scratch Q4_0 and NF4 quantizers plus a GGUF header writer/reader | `scripts/quant_demo.py` |
@@ -39,9 +45,11 @@ flowchart LR
 
 | Model | FinQA exec. accuracy | Answers with unit-less figures | Trade-advice rate |
 | :--- | :--- | :--- | :--- |
-| Llama 3.2 3B Instruct (base) | _pending_ | | |
-| Sentinel v1 | _pending_ | | |
-| Sentinel v2 | _pending_ | | |
+| Llama 3.2 3B Instruct (base) | 47.7% | 63.7% | 0.0% |
+| Sentinel v1 | 18.3% | 13.3% | 0.0% |
+| **Sentinel v2** | **66.0%** | 95.0% | 0.0% |
+
+v2 gets 18.3 points more right than the base model. v1 scored *below* the base model because of the training bugs listed under [What I learned building v2](#what-i-learned-building-v2). The unit-less column is inflated by the benchmark itself: every prompt asks the model to end with `Answer: <number>`, and v2 follows that format most closely, so its bare final numbers get flagged.
 
 **Speed on CPU only** (Q4_K_M, ~2 GB):
 
@@ -84,14 +92,17 @@ Auditing the v1 training run turned up real bugs. Fixing them was most of the wo
 
 ## Quick start
 
-Requires Python 3.10–3.12 (prebuilt CPU wheels for `llama-cpp-python`).
+Requires Python 3.10–3.12 (prebuilt CPU wheels for `llama-cpp-python`) and Node 20+ for the UI.
 
 ```bash
 git clone https://github.com/Prakruthi19/fintune-sentinel.git
 cd fintune-sentinel
 pip install -r requirements.txt
-python app.py            # downloads the GGUF (~2 GB) and opens http://localhost:7860
+(cd web && npm ci && npm run build)   # React UI -> web/dist, served by app.py
+python app.py                         # downloads the GGUF (~2 GB); open http://localhost:7860
 ```
+
+UI development with hot reload: keep `python app.py` running and start `cd web && npm run dev` (http://localhost:5173, proxies `/api` to the server).
 
 Docker:
 
