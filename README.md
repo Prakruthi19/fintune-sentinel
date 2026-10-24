@@ -50,7 +50,37 @@ Verified so far, with no model involved:
 - Unit tests for finbench and sentinel run in CI on Python 3.11 and 3.12.
 
 Run it: [docs/stage1-runbook.md](docs/stage1-runbook.md).
-Results: *none yet*.
+Results: *none published yet* (see Verification status).
+
+### CI eval gate (no model needed)
+
+Every run now saves each model reply exactly as received (`model_turns` in
+`predictions.jsonl`). `finbench/replay.py` feeds those saved replies back
+through the agent loop, tools and scoring, and CI fails if any item's
+verdict (answer, correct, lenient, category, stop reason, invalid calls)
+changes. So a change to scoring cannot silently move a published number.
+
+- `tests/fixtures/replays/synthetic.jsonl`: 14 **hand-written, synthetic**
+  replies (no model produced them) covering all 8 categories, modelled on
+  the failure patterns of the first llama3.2:3b run.
+- Recorded runs are added with
+  `python -m finbench.replay make-fixture results/<run> --out tests/fixtures/replays/<run>.jsonl`.
+
+## Verification status
+
+What was actually run. Anything not listed as run is written only.
+
+| What | Setup | Date | Result |
+|---|---|---|---|
+| Tools reproduce FinQA gold answers | test + dev splits, no model | 2026-10 | 1147/1147 test, 883/883 dev |
+| Oracle model through the full harness | 200-item stratified sample, no model | 2026-10 | 100% |
+| Unit tests + replay gate | CI, Python 3.11 / 3.12, no model | 2026-10-24 | 76 tests pass locally (Python 3.13); CI result on the PR |
+| Replay gate on synthetic replies | 14 hand-written items, no model | 2026-10-24 | all 14 verdicts reproduce |
+| llama3.2:3b smoke run | Ollama, 0-shot, n=10 (small) | 2026-10 | 0/10; 80% invalid tool calls. Run files not committed yet |
+| qwen3.5:4b smoke run | Ollama, 0-shot, n=10 | not run | written only |
+| Few-shot (k=3) runs | | not run | written only |
+| Full runs, n=200 (Kaggle T4 / free API) | | not run | written only |
+| Replay gate on a recorded real run | | not run | written only (needs a run made with this version) |
 
 ## v2: training pipeline, compliance checks, app
 
