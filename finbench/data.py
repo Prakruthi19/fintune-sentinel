@@ -25,20 +25,21 @@ class Example:
         return len(parse_program(self.program))
 
 
+def example_from_record(r: dict) -> Example:
+    """One raw FinQA record (as in test.json) to an Example."""
+    return Example(
+        id=r["id"],
+        question=r["qa"]["question"],
+        pre_text=r["pre_text"],
+        post_text=r["post_text"],
+        table=r["table"],
+        program=r["qa"]["program"],
+        gold=r["qa"]["exe_ans"],
+    )
+
+
 def load_examples(path: str | Path) -> list[Example]:
-    raw = json.loads(Path(path).read_text())
-    return [
-        Example(
-            id=r["id"],
-            question=r["qa"]["question"],
-            pre_text=r["pre_text"],
-            post_text=r["post_text"],
-            table=r["table"],
-            program=r["qa"]["program"],
-            gold=r["qa"]["exe_ans"],
-        )
-        for r in raw
-    ]
+    return [example_from_record(r) for r in json.loads(Path(path).read_text())]
 
 
 def render_table(table: list[list[str]]) -> str:
