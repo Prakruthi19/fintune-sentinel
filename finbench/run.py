@@ -65,6 +65,12 @@ def evaluate_one(model: ChatModel, ex: Example, fewshot: list[dict], max_turns: 
         "prompt_tokens": traj.prompt_tokens,
         "completion_tokens": traj.completion_tokens,
         "final_text": traj.turns[-1].content if traj.turns else None,
+        # every model reply exactly as received, so the run can be replayed
+        # through scoring later without the model (finbench/replay.py)
+        "model_turns": [{"content": t.content,
+                         "tool_calls": [{"id": c.id, "name": c.name, "arguments": c.arguments}
+                                        for c in t.tool_calls]}
+                        for t in traj.turns],
     }
 
 
