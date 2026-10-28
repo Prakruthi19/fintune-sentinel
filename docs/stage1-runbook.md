@@ -38,6 +38,33 @@ If a model "thinks" before answering (some Qwen versions do by default),
 record whether thinking was on in the run name: it changes both accuracy
 and latency.
 
+### Same thing in Windows PowerShell
+
+```powershell
+# Ollama's default context is smaller and truncates silently. Set it for
+# the Ollama server, then restart Ollama (quit it from the tray first).
+[Environment]::SetEnvironmentVariable("OLLAMA_CONTEXT_LENGTH", "16384", "User")
+$env:OLLAMA_CONTEXT_LENGTH = "16384"
+ollama serve            # leave this window open; use a second window below
+
+ollama pull <model-tag>
+ollama show <model-tag> # the "Capabilities" list must include "tools"
+
+python -m finbench.run --model <model-tag> --base-url http://localhost:11434/v1 `
+  --n 10 --fewshot 0 --run-name <short-name>-0shot-n10 --hardware "<your CPU/RAM>"
+```
+
+Each run saves every model reply, so it can become a CI fixture:
+
+```powershell
+python -m finbench.replay make-fixture results/<short-name>-0shot-n10 `
+  --data-dir data/finqa --out tests/fixtures/replays/<short-name>-0shot-n10.jsonl
+python -m finbench.replay check tests/fixtures/replays/<short-name>-0shot-n10.jsonl
+```
+
+Runs made before `model_turns` was recorded (the first llama3.2:3b run)
+cannot be replayed; rerun them to get a fixture.
+
 ## 2. Same models on a free Kaggle GPU (vLLM)
 
 In a Kaggle notebook with a T4 GPU:
