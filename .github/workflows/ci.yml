@@ -22,8 +22,24 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev]" fastapi httpx python-multipart pypdf openpyxl python-docx
       - name: Lint
         run: ruff check finbench sentinel tests scripts/download_finqa.py
       - name: Tests (no network, no model; LLM is faked)
         run: pytest --cov --cov-report=term-missing --cov-fail-under=90
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build

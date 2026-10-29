@@ -24,8 +24,13 @@ def _chat(user: str, assistant: str) -> list:
     ]
 
 
+def _text(x) -> bool:
+    # pandas reads empty CSV cells as float NaN, which is truthy, so check the type too.
+    return isinstance(x, str) and bool(x.strip())
+
+
 def from_10k(row: dict):
-    if not (row.get("question") and row.get("answer") and row.get("context")):
+    if not all(_text(row.get(k)) for k in ("question", "answer", "context")):
         return None
     return _chat(f"Context:\n{row['context']}\n\nQuestion: {row['question']}", row["answer"])
 

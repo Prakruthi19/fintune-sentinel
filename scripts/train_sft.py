@@ -7,21 +7,27 @@ Fixes over the notebook run: FinQA from train.json (dev/test kept for evaluation
 rendered as markdown, gold calculation steps as targets, Llama-2 tokens stripped, one chat
 template for all data, loss only on assistant tokens, over-length examples dropped instead
 of truncated (truncation cut off the answers), and a held-out eval split.
+
+With --hub-checkpoint-repo every checkpoint is pushed to a private HF repo, and a rerun
+resumes from it, so a dropped Kaggle/Colab session only loses the last --save-steps.
 """
 import argparse
 import json
 import os
+import shutil
 
 import pandas as pd
+from huggingface_hub import snapshot_download
 from unsloth import FastLanguageModel, is_bfloat16_supported  # must be imported before trl
 from unsloth.chat_templates import train_on_responses_only
 from datasets import Dataset, concatenate_datasets
+from transformers.trainer_utils import get_last_checkpoint
 from trl import SFTConfig, SFTTrainer
 
 from sentinel.data import from_10k, from_finqa, from_llama2
 
 
-def build_dataset(data_dir, tokenizer, max_len, seed, max_samples=None):
+def build_dataset(data_dir, tokenizer, max_len, seed, max_samples=None, eval_size=200):
     convs = {
         "10k": [from_10k(r) for r in pd.read_csv(os.path.join(data_dir, "Financial-QA-10k.csv")).to_dict("records")],
         "theory": [from_llama2(t) for t in pd.read_csv(os.path.join(data_dir, "finance-llama2-1k.csv"))["text"]],
@@ -36,7 +42,29 @@ def build_dataset(data_dir, tokenizer, max_len, seed, max_samples=None):
         keep = [t for t, n in zip(texts, lengths) if n <= max_len]
         print(f"{source:>7}: {len(rows)} parsed, {len(keep)} kept (<= {max_len} tokens)")
         parts.append(Dataset.from_dict({"text": keep, "source": [source] * len(keep)}))
-    return concatenate_datasets(parts).shuffle(seed=seed).train_test_split(test_size=0.05, seed=seed)
+    ds = concatenate_datasets(parts).shuffle(seed=seed)
+    # A capped eval split: evaluating 5% of the data every 100 steps cost almost as much as training.
+    return ds.train_test_split(test_size=min(eval_size, max(1, len(ds) // 20)), seed=seed)
+
+
+def find_checkpoint(ckpt_dir, hub_repo):
+    """Latest local checkpoint, else the one pushed to the Hub by an earlier (disconnected) session."""
+    if os.path.isdir(ckpt_dir) and (last := get_last_checkpoint(ckpt_dir)):
+        return last
+    if not hub_repo:
+        return None
+    try:
+        snap = snapshot_download(hub_repo, allow_patterns="last-checkpoint/*")
+    except Exception as e:  # repo not created yet: first run
+        print(f"no Hub checkpoint in {hub_repo}: {type(e).__name__}")
+        return None
+    src = os.path.join(snap, "last-checkpoint")
+    if not os.path.isfile(os.path.join(src, "trainer_state.json")):
+        return None
+    step = json.load(open(os.path.join(src, "trainer_state.json")))["global_step"]
+    dst = os.path.join(ckpt_dir, f"checkpoint-{step}")
+    shutil.copytree(src, dst, dirs_exist_ok=True)
+    return dst
 
 
 def main():
@@ -53,6 +81,10 @@ def main():
     p.add_argument("--max-samples", type=int, default=None, help="per source; e.g. 50 for a cheap smoke test")
     p.add_argument("--max-steps", type=int, default=-1, help="e.g. 20 for a smoke test; -1 = full epochs")
     p.add_argument("--skip-gguf", action="store_true", help="skip the slow GGUF export (smoke tests)")
+    p.add_argument("--eval-size", type=int, default=200, help="held-out examples evaluated every --save-steps")
+    p.add_argument("--save-steps", type=int, default=100)
+    p.add_argument("--hub-checkpoint-repo", default=None,
+                   help="private HF repo to push each checkpoint to and resume from (survives Kaggle disconnects)")
     p.add_argument("--seed", type=int, default=3407)
     p.add_argument("--report-to", default="none", help="e.g. wandb or tensorboard")
     args = p.parse_args()
@@ -66,7 +98,8 @@ def main():
         use_gradient_checkpointing="unsloth", random_state=args.seed,
     )
 
-    ds = build_dataset(args.data_dir, tokenizer, args.max_len, args.seed, args.max_samples)
+    ds = build_dataset(args.data_dir, tokenizer, args.max_len, args.seed, args.max_samples, args.eval_size)
+    ckpt_dir = os.path.join(args.out, "checkpoints")
     trainer = SFTTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -76,6 +109,7 @@ def main():
             dataset_text_field="text",
             max_seq_length=args.max_len,
             per_device_train_batch_size=args.batch_size,
+            per_device_eval_batch_size=args.batch_size,
             gradient_accumulation_steps=16 // args.batch_size,
             num_train_epochs=args.epochs,
             max_steps=args.max_steps,
@@ -88,13 +122,17 @@ def main():
             optim="adamw_8bit",
             logging_steps=10,
             eval_strategy="steps",
-            eval_steps=100,
+            eval_steps=args.save_steps,
             save_strategy="steps",
-            save_steps=100,
+            save_steps=args.save_steps,
             save_total_limit=2,
             load_best_model_at_end=True,
             metric_for_best_model="eval_loss",
-            output_dir=os.path.join(args.out, "checkpoints"),
+            output_dir=ckpt_dir,
+            push_to_hub=bool(args.hub_checkpoint_repo),
+            hub_model_id=args.hub_checkpoint_repo,
+            hub_strategy="checkpoint",  # uploads the latest checkpoint to last-checkpoint/ after every save
+            hub_private_repo=True,
             report_to=args.report_to,
             seed=args.seed,
         ),
@@ -105,7 +143,9 @@ def main():
         instruction_part="<|start_header_id|>user<|end_header_id|>\n\n",
         response_part="<|start_header_id|>assistant<|end_header_id|>\n\n",
     )
-    stats = trainer.train()
+    resume = find_checkpoint(ckpt_dir, args.hub_checkpoint_repo)
+    print(f"resuming from {resume}" if resume else "starting from scratch")
+    stats = trainer.train(resume_from_checkpoint=resume)
     metrics = {**stats.metrics, **trainer.evaluate()}
     print(metrics)
     json.dump(metrics, open(os.path.join(args.out, "metrics.json"), "w"), indent=2)

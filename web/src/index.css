@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens: one set of names, two palettes. Components only use these. */
+:root {
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f1f3f6;
+  --line: #e3e7ed;
+  --ink: #0e1726;
+  --ink-2: #4a5568;
+  --ink-3: #8b95a7;
+  --brand: #0f766e;
+  --brand-strong: #0b5f58;
+  --brand-ink: #ffffff;
+  --brand-soft: #e3f3f0;
+  --ok: #047857;
+  --ok-soft: #e6f6ef;
+  --warn: #b45309;
+  --warn-soft: #fdf3e2;
+  --bad: #dc2626;
+  --bad-soft: #fdecec;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.05), 0 8px 24px -12px rgb(16 24 40 / 0.12);
+}
+.dark {
+  --canvas: #0a0e15;
+  --surface: #10161f;
+  --surface-2: #17202c;
+  --line: #222c3a;
+  --ink: #e7ebf1;
+  --ink-2: #a4aebd;
+  --ink-3: #6c7789;
+  --brand: #2dd4bf;
+  --brand-strong: #5eead4;
+  --brand-ink: #042f2b;
+  --brand-soft: rgb(45 212 191 / 0.12);
+  --ok: #34d399;
+  --ok-soft: rgb(52 211 153 / 0.12);
+  --warn: #fbbf24;
+  --warn-soft: rgb(251 191 36 / 0.12);
+  --bad: #f87171;
+  --bad-soft: rgb(248 113 113 / 0.12);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --shadow-card: var(--shadow);
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--brand-soft); }
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+
+/* Model answers (markdown) */
+.answer { font-size: 15px; line-height: 1.7; color: var(--ink); overflow-wrap: anywhere; }
+.answer > :first-child { margin-top: 0; }
+.answer > :last-child { margin-bottom: 0; }
+.answer p, .answer ul, .answer ol { margin: 0 0 0.8em; }
+.answer ul, .answer ol { padding-left: 1.3em; }
+.answer ul { list-style: disc; }
+.answer ol { list-style: decimal; }
+.answer li { margin: 0.2em 0; }
+.answer strong { font-weight: 600; }
+.answer code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2);
+  border: 1px solid var(--line); border-radius: 6px; padding: 0.1em 0.35em; }
+.answer pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+.answer pre code { border: 0; padding: 0; background: none; }
+.answer table { border-collapse: collapse; margin: 0.4em 0 0.9em; font-size: 14px; display: block; overflow-x: auto; }
+.answer th, .answer td { border: 1px solid var(--line); padding: 6px 12px; text-align: left; font-variant-numeric: tabular-nums; }
+.answer th { background: var(--surface-2); font-weight: 600; }
+.answer h1, .answer h2, .answer h3 { font-size: 1em; font-weight: 650; margin: 1em 0 0.4em; }
+
+.caret > :last-child::after, .caret:empty::after { content: ""; display: inline-block; width: 7px; height: 1.05em;
+  margin-left: 2px; vertical-align: -0.15em; background: var(--brand); border-radius: 2px; animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.dot { animation: bounce 1.2s infinite ease-in-out; }
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce { 0%, 80%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .caret > :last-child::after, .dot { animation: none; } }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+}

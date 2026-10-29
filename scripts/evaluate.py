@@ -3,7 +3,10 @@
 Replaces the 3-prompt eyeball comparison with numbers you can defend:
   * execution accuracy: final number within 1% of the gold answer (handles 0.133 vs 13.3%)
   * unit compliance and trade-advice rate, from the same Policy-Sentinel audit the app uses
-  * throughput: prompt + generation tokens/sec and latency on this machine's CPU
+  * throughput: generation tokens/sec and latency on this machine (CPU by default)
+
+Accuracy does not depend on the hardware, so the big runs can use a GPU (--gpu-layers -1, e.g. on
+Kaggle) while speed is measured separately with a small --n on the target CPU.
 
     python -m scripts.evaluate --finqa data/test.json --n 200 \
         --model base=models/Llama-3.2-3B-Instruct-Q4_K_M.gguf \
@@ -12,10 +15,10 @@ Replaces the 3-prompt eyeball comparison with numbers you can defend:
 """
 import argparse
 import json
+import os
 import re
 import statistics
 import time
-
 
 from sentinel.data import SYSTEM_PROMPT, from_finqa
 from sentinel.governance import audit
@@ -50,15 +53,19 @@ def is_correct(pred_text, gold):
     return False
 
 
-def run(model_path, examples, threads, n_ctx):
-    from llama_cpp import Llama  # imported here so tests and CI don't need the inference runtime
+def run(model_path, examples, threads, n_ctx, gpu_layers=0):
+    from llama_cpp import Llama  # lazy, so the scoring helpers import without llama.cpp (tests, CI)
 
-    llm = Llama(model_path=model_path, n_ctx=n_ctx, n_threads=threads, n_gpu_layers=0, verbose=False)
+    llm = Llama(model_path=model_path, n_ctx=n_ctx, n_threads=threads, n_gpu_layers=gpu_layers, verbose=False)
     rows = []
     for ex in examples:
         msgs = ex["messages"][:2]  # system + user; the assistant turn is the reference
         t0 = time.perf_counter()
-        out = llm.create_chat_completion(messages=msgs, max_tokens=384, temperature=0.0)
+        try:
+            out = llm.create_chat_completion(messages=msgs, max_tokens=384, temperature=0.0)
+        except ValueError as err:  # prompt longer than n_ctx: score as wrong instead of aborting the run
+            print(f"skipped {ex['id']}: {err}")
+            out = {"choices": [{"message": {"content": ""}}], "usage": {"completion_tokens": 0}}
         dt = time.perf_counter() - t0
         text = out["choices"][0]["message"]["content"]
         a = audit(text)
@@ -91,6 +98,7 @@ def main():
     p.add_argument("--model", action="append", required=True, help="name=path/to/model.gguf")
     p.add_argument("--threads", type=int, default=8)
     p.add_argument("--n-ctx", type=int, default=4096)
+    p.add_argument("--gpu-layers", type=int, default=0, help="-1 offloads every layer (needs a CUDA build)")
     p.add_argument("--out", default="eval_results.json")
     args = p.parse_args()
 
@@ -102,13 +110,15 @@ def main():
             examples.append({"id": e.get("id"), "gold": e["qa"].get("exe_ans", e["qa"]["answer"]), "messages": msgs})
     examples = examples[: args.n]
 
+    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     report = {}
     for spec in args.model:
         name, path = spec.split("=", 1)
-        rows = run(path, examples, args.threads, args.n_ctx)
+        rows = run(path, examples, args.threads, args.n_ctx, args.gpu_layers)
         report[name] = {"summary": summarize(rows), "rows": rows}
         print(name, json.dumps(report[name]["summary"], indent=2))
-    json.dump(report, open(args.out, "w"), indent=2)
+        with open(args.out, "w") as f:  # after every model, so a late crash keeps the finished runs
+            json.dump(report, f, indent=2)
 
     print("\n| Model | FinQA exec acc | Unit-less rate | Trade-advice rate | Median latency | Gen tok/s |")
     print("|---|---|---|---|---|---|")

@@ -52,3 +52,9 @@ def test_eval_scoring():
     assert is_correct("growth is $1,234.5 million\nAnswer: $1,234.5", 1234.5)
     assert not is_correct("Answer: 1.133", 0.13333)
     assert not is_correct("I cannot tell.", 0.13333)
+
+
+def test_from_10k_skips_missing_fields():
+    from sentinel.data import from_10k
+    assert from_10k({"question": "Q?", "answer": float("nan"), "context": "C"}) is None
+    assert from_10k({"question": "Q?", "answer": "A", "context": "C"})[2]["content"] == "A"

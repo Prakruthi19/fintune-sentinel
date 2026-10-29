@@ -15,3 +15,9 @@ eval_results.json
 .coverage
 *.egg-info/
 build/
+.venv/
+
+# web UI
+web/node_modules/
+web/dist/
+web/*.tsbuildinfo
